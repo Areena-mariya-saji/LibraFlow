@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}LibraFlow — Modern Library Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Hero Section -->
+  <div class="hero-banner p-4 p-md-5">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <span class="badge bg-teal-primary text-white mb-2 px-3 py-2 text-uppercase fw-semibold" style="background-color: var(--lf-teal-primary);">
+          <i class="fa-solid fa-graduation-cap me-1"></i> BCA College Microproject
+        </span>
+        <h1 class="display-5 fw-bold text-white mb-3">Modern, Intelligent Library Management</h1>
+        <p class="lead text-light opacity-90 mb-4">
+          Manage inventory, physical copy accession tracking, member loan lifecycles, reservation queues, and automated overdue fines with end-to-end containerized and cloud-ready architecture.
+        </p>
+
+        <!-- Quick Book Search Bar -->
+        <form action="{{ url_for('books') }}" method="GET" class="d-flex gap-2">
+          <div class="input-group input-group-lg shadow-sm">
+            <span class="input-group-text bg-white border-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+            <input type="text" name="q" class="form-control border-0" placeholder="Search by title, author, or ISBN...">
+            <button class="btn btn-primary px-4 fw-semibold" type="submit">Search Books</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="col-lg-5 mt-4 mt-lg-0 text-center">
+        <div class="p-4 rounded-4 bg-dark bg-opacity-50 border border-secondary border-opacity-25 shadow-lg">
+          <i class="fa-solid fa-book-bookmark text-teal fa-4x mb-3" style="color: var(--lf-teal-light);"></i>
+          <h4 class="text-white fw-bold">LibraFlow Platform</h4>
+          <p class="text-light small mb-3">Demonstrates Virtualization, KVM Automation, Docker, Kubernetes & AWS Serverless.</p>
+          {% if not current_user %}
+            <div class="d-grid gap-2">
+              <a href="{{ url_for('login') }}" class="btn btn-primary fw-semibold"><i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Sign In to Portal</a>
+              <a href="{{ url_for('register') }}" class="btn btn-outline-light"><i class="fa-solid fa-user-plus me-2"></i>Student Registration</a>
+            </div>
+          {% else %}
+            <div class="alert alert-info py-2 mb-0">
+              Logged in as <strong>{{ current_user.full_name }}</strong> ({{ current_user.role }})
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics Row -->
+  <div class="row g-3 mb-5">
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-label">Total Unique Titles</div>
+            <div class="stat-value text-primary">{{ total_books }}</div>
+          </div>
+          <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+            <i class="fa-solid fa-book fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-label">Physical Copies</div>
+            <div class="stat-value text-teal" style="color: var(--lf-teal-primary);">{{ total_copies }}</div>
+          </div>
+          <div class="bg-teal bg-opacity-10 p-3 rounded-circle text-teal" style="background-color: var(--lf-teal-subtle); color: var(--lf-teal-primary);">
+            <i class="fa-solid fa-layer-group fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-label">Copies Available Now</div>
+            <div class="stat-value text-success">{{ available_copies }}</div>
+          </div>
+          <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
+            <i class="fa-solid fa-circle-check fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Featured Books Section -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h3 class="fw-bold mb-0 text-navy"><i class="fa-solid fa-star text-warning me-2"></i>Featured Catalog Books</h3>
+      <p class="text-muted small mb-0">Browse through high-demand titles in our library collection</p>
+    </div>
+    <a href="{{ url_for('books') }}" class="btn btn-outline-primary btn-sm fw-semibold">
+      View All Books <i class="fa-solid fa-arrow-right ms-1"></i>
+    </a>
+  </div>
+
+  <div class="row g-4 mb-5">
+    {% for book in recent_books %}
+      <div class="col-md-6 col-lg-3">
+        <div class="book-card h-100">
+          <div class="book-card-header">
+            <span class="category-pill">{{ book.category }}</span>
+            <h5 class="card-title fw-bold text-white text-truncate mb-1" title="{{ book.title }}">{{ book.title }}</h5>
+            <small class="text-light opacity-75 d-block text-truncate">by {{ book.author }}</small>
+          </div>
+          <div class="card-body d-flex flex-column justify-content-between">
+            <div class="mb-3">
+              <div class="small text-muted mb-2"><strong>ISBN:</strong> <code>{{ book.isbn }}</code></div>
+              <p class="small text-secondary mb-0" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                {{ book.description or "No description provided." }}
+              </p>
+            </div>
+            <div class="pt-2 border-top">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small text-muted">Availability:</span>
+                {% if book.avail_count > 0 %}
+                  <span class="badge badge-status-available">{{ book.avail_count }} / {{ book.copy_count }} Available</span>
+                {% else %}
+                  <span class="badge badge-status-overdue">All Borrowed</span>
+                {% endif %}
+              </div>
+              <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-outline-primary btn-sm w-100">
+                View Details & Copies
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Microproject Syllabus Modules Overview -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-navy text-white p-3" style="background-color: var(--lf-navy-dark);">
+      <h5 class="mb-0 text-white"><i class="fa-solid fa-cubes me-2 text-teal"></i>Syllabus Architecture Demonstration Modules</h5>
+    </div>
+    <div class="card-body p-4">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 border rounded-3 h-100">
+            <h6 class="fw-bold text-primary"><i class="fa-solid fa-server me-2"></i>Module 1 & 2: Virtualization & Automation</h6>
+            <p class="small text-muted mb-0">Type 1 vs Type 2 Hypervisors, VirtualBox Ubuntu deployment, snapshots, KVM/QEMU automation scripts, and libvirt management.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 border rounded-3 h-100">
+            <h6 class="fw-bold text-success"><i class="fa-brands fa-docker me-2"></i>Module 3: Docker Containerization</h6>
+            <p class="small text-muted mb-0">Production Docker image with Gunicorn, multi-stage builds, container health checks, persistent volumes, and Docker Compose orchestration.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 border rounded-3 h-100">
+            <h6 class="fw-bold text-warning"><i class="fa-solid fa-cloud me-2"></i>Module 4 & 5: Kubernetes & AWS Serverless</h6>
+            <p class="small text-muted mb-0">Minikube deployment with ClusterIP & NodePort, rolling updates, and AWS Lambda + API Gateway serverless endpoints with S3 event triggers.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

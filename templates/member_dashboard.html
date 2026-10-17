@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}My Student Dashboard — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Welcome Banner -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 text-white" style="background: linear-gradient(135deg, var(--lf-navy-dark) 0%, var(--lf-navy-surface) 100%);">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <span class="badge bg-teal-primary text-white mb-2" style="background-color: var(--lf-teal-primary);">
+          <i class="fa-solid fa-id-card me-1"></i> Library Member
+        </span>
+        <h2 class="fw-bold mb-1 text-white">Welcome back, {{ current_user.full_name }}!</h2>
+        <p class="text-light opacity-75 small mb-0">Member Account: <code>{{ current_user.username }}</code> | Status: <span class="badge bg-success">Active</span></p>
+      </div>
+      <div>
+        <a href="{{ url_for('books') }}" class="btn btn-primary fw-semibold">
+          <i class="fa-solid fa-magnifying-glass me-2"></i> Browse & Reserve Books
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member Overview KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Currently Borrowed</div>
+        <div class="stat-value text-primary">{{ active_loans|length }}</div>
+        <small class="text-muted">Active physical copies</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card warning-card">
+        <div class="stat-label">My Reservations</div>
+        <div class="stat-value text-warning">{{ reservations|length }}</div>
+        <small class="text-muted">Queued for availability</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card {% if total_unpaid > 0 %}alert-card{% endif %}">
+        <div class="stat-label">Outstanding Fines</div>
+        <div class="stat-value {% if total_unpaid > 0 %}text-danger{% else %}text-success{% endif %}">
+          ${{ "%.2f"|format(total_unpaid) }}
+        </div>
+        <small class="text-muted">
+          {% if total_unpaid > 0 %}Payable at library desk{% else %}Account in good standing{% endif %}
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Currently Borrowed Books -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold mb-0 text-navy"><i class="fa-solid fa-book-reader me-2 text-teal"></i>My Currently Borrowed Books</h5>
+      <a href="{{ url_for('member_loans') }}" class="btn btn-outline-primary btn-sm">Full Borrowing History</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Title & Author</th>
+              <th>Accession No.</th>
+              <th>Shelf Location</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for loan in active_loans %}
+              <tr class="{% if loan.loan_status == 'overdue' %}table-danger table-opacity-25{% endif %}">
+                <td>
+                  <strong>{{ loan.title }}</strong>
+                  <small class="d-block text-muted">by {{ loan.author }}</small>
+                </td>
+                <td><code>{{ loan.accession_number }}</code></td>
+                <td><i class="fa-solid fa-location-dot text-muted me-1"></i>{{ loan.location }}</td>
+                <td>{{ loan.issue_date }}</td>
+                <td>
+                  <span class="{% if loan.loan_status == 'overdue' %}text-danger fw-bold{% endif %}">
+                    {{ loan.due_date }}
+                  </span>
+                </td>
+                <td>
+                  {% if loan.loan_status == 'overdue' %}
+                    <span class="badge badge-status-overdue">Overdue</span>
+                  {% else %}
+                    <span class="badge badge-status-borrowed">Active Loan</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                  <i class="fa-solid fa-book-open fa-2x d-block mb-2 text-muted opacity-50"></i>
+                  You do not have any borrowed books at this time.
+                  <div class="mt-2">
+                    <a href="{{ url_for('books') }}" class="btn btn-sm btn-outline-primary">Search catalog to borrow</a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Reservations & Fines Row -->
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold mb-0 text-navy"><i class="fa-solid fa-calendar-check me-2 text-warning"></i>My Book Reservations</h5>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for r in reservations %}
+              <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="fw-bold mb-1"><a href="{{ url_for('book_detail', book_id=r.book_id) }}" class="text-decoration-none text-navy">{{ r.title }}</a></h6>
+                  <small class="text-muted">Reserved on: {{ r.reservation_date }}</small>
+                  {% if r.available_copies > 0 and r.reservation_status == 'pending' %}
+                    <span class="badge bg-success ms-2">A copy is now on shelf!</span>
+                  {% endif %}
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  {% if r.reservation_status == 'pending' %}
+                    <span class="badge badge-status-reserved">Pending</span>
+                    <form action="{{ url_for('cancel_reservation', reservation_id=r.id) }}" method="POST" class="d-inline confirm-action" data-confirm-message="Cancel this reservation?">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                    </form>
+                  {% elif r.reservation_status == 'fulfilled' %}
+                    <span class="badge bg-success">Fulfilled</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Cancelled</span>
+                  {% endif %}
+                </div>
+              </li>
+            {% else %}
+              <li class="list-group-item text-center text-muted py-4">No active book reservations.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold mb-0 text-navy"><i class="fa-solid fa-receipt me-2 text-danger"></i>My Fines & Penalties</h5>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for f in fines %}
+              <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-semibold">{{ f.book_title }}</div>
+                  <small class="text-muted">{{ f.reason }} ({{ f.recorded_date }})</small>
+                </div>
+                <div class="text-end">
+                  <span class="fw-bold text-danger">${{ "%.2f"|format(f.amount) }}</span>
+                  <div>
+                    {% if f.payment_status == 'unpaid' %}
+                      <span class="badge bg-danger">Unpaid</span>
+                    {% elif f.payment_status == 'paid' %}
+                      <span class="badge bg-success">Paid</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Waived</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </li>
+            {% else %}
+              <li class="list-group-item text-center text-muted py-4">No fine records. Your account is clear!</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  LibraFlow Serverless Microservices Architecture
+  Demonstrates AWS Lambda, API Gateway HTTP endpoints, and S3 event triggers.
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 128
+    Runtime: python3.12
+    Environment:
+      Variables:
+        LIBRARY_NAME: "LibraFlow"
+        TOTAL_TITLES: "250"
+        AVAILABLE_COPIES: "180"
+        BORROWED_COPIES: "70"
+
+Resources:
+  # ==============================================================================
+  # Function A: Book Availability Public API
+  # ==============================================================================
+  BookAvailabilityFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: book_availability_function.lambda_handler
+      Description: Returns real-time library inventory metrics in JSON format.
+      Events:
+        GetAvailability:
+          Type: Api
+          Properties:
+            Path: /books/availability
+            Method: get
+
+  # ==============================================================================
+  # Function B: Book Reservation Processing API
+  # ==============================================================================
+  BookReservationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: lambda_function.lambda_handler
+      Description: Validates and queues member book reservation requests.
+      Events:
+        PostReservation:
+          Type: Api
+          Properties:
+            Path: /books/reserve
+            Method: post
+
+  # ==============================================================================
+  # Function C: S3 Document Ingestion Event Processor
+  # ==============================================================================
+  S3EventProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: s3_event_function.lambda_handler
+      Description: Safe metadata logger for uploaded library catalog resources.
+
+Outputs:
+  AvailabilityApiUrl:
+    Description: "API Gateway endpoint URL for Book Availability"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/books/availability"
+  ReservationApiUrl:
+    Description: "API Gateway endpoint URL for Book Reservation"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/books/reserve"

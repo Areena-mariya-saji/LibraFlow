@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Dashboard — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <!-- Header Banner -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="fa-solid fa-gauge-high text-teal me-2" style="color: var(--lf-teal-primary);"></i>Administrator Control Center</h2>
+      <p class="text-muted small mb-0">System-wide inventory, member privileges, loan lifecycles, and audit telemetry</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('add_book') }}" class="btn btn-primary btn-sm fw-semibold">
+        <i class="fa-solid fa-plus me-1"></i> Add New Book
+      </a>
+      <a href="{{ url_for('members') }}" class="btn btn-outline-dark btn-sm fw-semibold">
+        <i class="fa-solid fa-user-gear me-1"></i> Manage Users
+      </a>
+      <a href="{{ url_for('reports') }}" class="btn btn-outline-secondary btn-sm fw-semibold">
+        <i class="fa-solid fa-chart-line me-1"></i> System Reports
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Grid -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-label">Total Titles</div>
+            <div class="stat-value">{{ total_books }}</div>
+            <small class="text-muted">{{ total_copies }} physical copies</small>
+          </div>
+          <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+            <i class="fa-solid fa-book-bookmark fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-label">Available Copies</div>
+            <div class="stat-value text-success">{{ available_copies }}</div>
+            <small class="text-muted">{{ borrowed_copies }} currently out</small>
+          </div>
+          <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
+            <i class="fa-solid fa-book-open-reader fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="stat-card info-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-label">Active Loans</div>
+            <div class="stat-value text-info">{{ active_loans }}</div>
+            <small class="text-muted">across {{ registered_members }} members</small>
+          </div>
+          <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info">
+            <i class="fa-solid fa-hand-holding-hand fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="stat-card alert-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="stat-label">Overdue Loans</div>
+            <div class="stat-value text-danger">{{ overdue_loans }}</div>
+            <small class="text-danger fw-semibold">${{ "%.2f"|format(total_unpaid_fines) }} unpaid fines</small>
+          </div>
+          <div class="bg-danger bg-opacity-10 p-3 rounded-circle text-danger">
+            <i class="fa-solid fa-clock-rotate-left fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Recent Loan Transactions -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0 text-navy"><i class="fa-solid fa-list-check me-2 text-teal"></i>Recent Loan Transactions</h5>
+          <a href="{{ url_for('loans') }}" class="btn btn-outline-primary btn-sm">View All Loans</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Book Title</th>
+                  <th>Accession No.</th>
+                  <th>Issue Date</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for loan in recent_loans %}
+                  <tr>
+                    <td>
+                      <span class="fw-bold">{{ loan.member_name }}</span>
+                      <small class="d-block text-muted">@{{ loan.username }}</small>
+                    </td>
+                    <td class="text-truncate" style="max-width: 220px;" title="{{ loan.book_title }}">{{ loan.book_title }}</td>
+                    <td><code>{{ loan.accession_number }}</code></td>
+                    <td>{{ loan.issue_date }}</td>
+                    <td>
+                      <span class="{% if loan.loan_status == 'overdue' %}text-danger fw-bold{% endif %}">
+                        {{ loan.due_date }}
+                      </span>
+                    </td>
+                    <td>
+                      {% if loan.loan_status == 'active' %}
+                        <span class="badge badge-status-borrowed">Active</span>
+                      {% elif loan.loan_status == 'overdue' %}
+                        <span class="badge badge-status-overdue">Overdue</span>
+                      {% else %}
+                        <span class="badge badge-status-returned">Returned</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No loan records found.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Operations & Recent Members -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold mb-0 text-navy"><i class="fa-solid fa-bolt me-2 text-warning"></i>Quick Management</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{{ url_for('add_book') }}" class="btn btn-outline-primary text-start">
+              <i class="fa-solid fa-square-plus me-2"></i> Register New Book
+            </a>
+            <a href="{{ url_for('loans') }}" class="btn btn-outline-dark text-start">
+              <i class="fa-solid fa-book-medical me-2"></i> Issue Book to Member
+            </a>
+            <a href="{{ url_for('reservations') }}" class="btn btn-outline-secondary text-start">
+              <i class="fa-solid fa-calendar-check me-2"></i> Review Reservation Queue ({{ pending_reservations }})
+            </a>
+            <a href="{{ url_for('fines') }}" class="btn btn-outline-danger text-start">
+              <i class="fa-solid fa-hand-holding-dollar me-2"></i> Review Unpaid Fines
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Members -->
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+          <h6 class="fw-bold mb-0 text-navy"><i class="fa-solid fa-users me-2 text-teal"></i>Recent Users</h6>
+          <a href="{{ url_for('members') }}" class="small fw-semibold text-teal">All Users</a>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for m in recent_members %}
+              <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                <div>
+                  <div class="fw-semibold small">{{ m.full_name }}</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">{{ m.email }}</div>
+                </div>
+                <div>
+                  <span class="badge bg-secondary text-uppercase" style="font-size: 0.65rem;">{{ m.role }}</span>
+                  {% if m.account_status == 'active' %}
+                    <span class="badge bg-success" style="font-size: 0.65rem;">Active</span>
+                  {% else %}
+                    <span class="badge bg-danger" style="font-size: 0.65rem;">Suspended</span>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

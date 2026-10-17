@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: libraflow
+  labels:
+    app.kubernetes.io/name: libraflow
+    app.kubernetes.io/part-of: library-management-system

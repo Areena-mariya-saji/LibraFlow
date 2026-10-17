@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header bg-navy text-white text-center p-4" style="background-color: var(--lf-navy-dark);">
+          <div class="mb-2">
+            <i class="fa-solid fa-book-bookmark text-teal fa-3x" style="color: var(--lf-teal-light);"></i>
+          </div>
+          <h3 class="fw-bold mb-1 text-white">LibraFlow Portal</h3>
+          <p class="text-light opacity-75 small mb-0">Enter your credentials to access your library account</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+          <form method="POST" action="{{ url_for('login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-3">
+              <label for="identifier" class="form-label fw-semibold">Username or Email</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fa-solid fa-user text-muted"></i></span>
+                <input type="text" class="form-control" id="identifier" name="identifier" required placeholder="admin or student1">
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="password" class="form-label fw-semibold">Password</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fa-solid fa-lock text-muted"></i></span>
+                <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+              <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
+            </button>
+          </form>
+
+          <!-- Quick Fill Demo Accounts for Viva Demo -->
+          <div class="demo-box mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small fw-bold text-navy"><i class="fa-solid fa-flask text-teal me-1"></i>Demo Accounts (Click to Fill):</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-sm btn-outline-dark btn-fill-demo demo-btn" data-user="admin" data-pass="Admin@123">
+                <i class="fa-solid fa-shield-halved me-1"></i> Admin
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-info btn-fill-demo demo-btn" data-user="librarian1" data-pass="Librarian@123">
+                <i class="fa-solid fa-book-reader me-1"></i> Librarian
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-success btn-fill-demo demo-btn" data-user="student1" data-pass="Student@123">
+                <i class="fa-solid fa-user-graduate me-1"></i> Student 1
+              </button>
+            </div>
+            <div class="small text-muted mt-2" style="font-size: 0.75rem;">
+              Passcodes: Admin@123 / Librarian@123 / Student@123
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <span class="text-muted small">New member?</span>
+            <a href="{{ url_for('register') }}" class="small fw-semibold text-teal ms-1" style="color: var(--lf-teal-primary);">Create Student Account</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

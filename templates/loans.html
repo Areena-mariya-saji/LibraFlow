@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Circulation & Loans — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="fa-solid fa-arrow-right-arrow-left text-teal me-2" style="color: var(--lf-teal-primary);"></i>Book Loans & Circulation</h2>
+      <p class="text-muted small mb-0">Issue books to verified members, track due dates, enforce returns, and manage overdue records</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#issueBookModal">
+        <i class="fa-solid fa-circle-plus me-1"></i> Issue Book
+      </button>
+    </div>
+  </div>
+
+  <!-- Status Filter Pills -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="btn-group shadow-sm" role="group">
+      <a href="{{ url_for('loans') }}" class="btn btn-sm {% if not status_filter %}btn-dark{% else %}btn-outline-dark{% endif %}">
+        All Loans
+      </a>
+      <a href="{{ url_for('loans', status='active') }}" class="btn btn-sm {% if status_filter == 'active' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        Active
+      </a>
+      <a href="{{ url_for('loans', status='overdue') }}" class="btn btn-sm {% if status_filter == 'overdue' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+        Overdue
+      </a>
+      <a href="{{ url_for('loans', status='returned') }}" class="btn btn-sm {% if status_filter == 'returned' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+        Returned
+      </a>
+    </div>
+
+    <div>
+      <input type="text" id="tableSearchInput" class="form-control form-control-sm" placeholder="Search table..." style="width: 250px;">
+    </div>
+  </div>
+
+  <!-- Loans Table -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 filterable-table">
+          <thead>
+            <tr>
+              <th>Loan ID</th>
+              <th>Member</th>
+              <th>Book Title & Accession</th>
+              <th>Shelf Location</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Return Date</th>
+              <th>Status</th>
+              <th>Fine</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for loan in loans %}
+              <tr class="{% if loan.loan_status == 'overdue' %}table-danger table-opacity-25{% endif %}">
+                <td><code>#L-{{ "%04d"|format(loan.id) }}</code></td>
+                <td>
+                  <div class="fw-bold">{{ loan.member_name }}</div>
+                  <small class="text-muted">@{{ loan.username }}</small>
+                </td>
+                <td>
+                  <div class="fw-semibold text-truncate" style="max-width: 220px;" title="{{ loan.book_title }}">{{ loan.book_title }}</div>
+                  <small class="text-muted">Accession: <code>{{ loan.accession_number }}</code></small>
+                </td>
+                <td><i class="fa-solid fa-location-dot text-muted me-1"></i>{{ loan.location }}</td>
+                <td>{{ loan.issue_date }}</td>
+                <td>
+                  <span class="{% if loan.loan_status == 'overdue' %}text-danger fw-bold{% endif %}">
+                    {{ loan.due_date }}
+                  </span>
+                </td>
+                <td>
+                  {% if loan.return_date %}
+                    <span class="text-success">{{ loan.return_date }}</span>
+                  {% else %}
+                    <span class="text-muted fst-italic">Pending</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if loan.loan_status == 'active' %}
+                    <span class="badge badge-status-borrowed">Active</span>
+                  {% elif loan.loan_status == 'overdue' %}
+                    <span class="badge badge-status-overdue">Overdue</span>
+                  {% else %}
+                    <span class="badge badge-status-returned">Returned</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if loan.fine_amount %}
+                    <span class="fw-bold text-danger">${{ "%.2f"|format(loan.fine_amount) }}</span>
+                    <small class="d-block text-muted">({{ loan.fine_payment_status }})</small>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if loan.return_date is none %}
+                    <form action="{{ url_for('return_book', loan_id=loan.id) }}" method="POST" class="d-inline confirm-action" data-confirm-message="Record return of copy {{ loan.accession_number }} by {{ loan.member_name }}?">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-sm btn-outline-success">
+                        <i class="fa-solid fa-arrow-down-left-and-arrow-up-right-to-center me-1"></i> Return
+                      </button>
+                    </form>
+                  {% else %}
+                    <span class="badge bg-light text-muted border">Completed</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="10" class="text-center text-muted py-4">No loan records matching the current filter.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: Issue Book to Member -->
+<div class="modal fade" id="issueBookModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header bg-navy text-white" style="background-color: var(--lf-navy-dark);">
+        <h5 class="modal-title fw-bold text-white"><i class="fa-solid fa-book-medical me-2 text-teal"></i>Issue Book Copy</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{{ url_for('issue_book') }}" method="POST">
+        <div class="modal-body p-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Select Member</label>
+            <select name="member_id" class="form-select" required>
+              <option value="">-- Choose active member --</option>
+              {% for m in active_members %}
+                <option value="{{ m.id }}">{{ m.full_name }} (@{{ m.username }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Select Available Physical Copy</label>
+            <select name="copy_id" class="form-select" required>
+              <option value="">-- Choose available copy --</option>
+              {% for c in available_copies %}
+                <option value="{{ c.id }}">{{ c.book_title }} [{{ c.accession_number }}] ({{ c.location }})</option>
+              {% endfor %}
+            </select>
+            <small class="text-muted">Only copies currently marked as 'Available' are listed.</small>
+          </div>
+
+          <div class="alert alert-info py-2 small mb-0">
+            <i class="fa-solid fa-circle-info me-1"></i> Default standard loan period is 14 days.
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary fw-semibold">Authorize & Issue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

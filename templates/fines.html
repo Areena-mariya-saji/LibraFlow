@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Fines & Penalties — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="fa-solid fa-receipt text-teal me-2" style="color: var(--lf-teal-primary);"></i>Library Fines & Overdue Penalties</h2>
+      <p class="text-muted small mb-0">Automated calculation of overdue book penalties and settlement tracking</p>
+    </div>
+    <div class="card bg-danger bg-opacity-10 border border-danger border-opacity-25 py-2 px-3 rounded-3">
+      <span class="small text-danger fw-semibold">Total Outstanding Balance:</span>
+      <h4 class="fw-bold text-danger mb-0">${{ "%.2f"|format(total_unpaid) }}</h4>
+    </div>
+  </div>
+
+  <div class="alert alert-secondary py-2 small mb-4">
+    <i class="fa-solid fa-circle-info me-1"></i> <strong>Academic Project Note:</strong> This is an internal library ledger simulation. No real financial or payment processing gateway is connected.
+  </div>
+
+  <!-- Fines Table -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Fine ID</th>
+              <th>Member</th>
+              <th>Book Title & Accession</th>
+              <th>Fine Amount</th>
+              <th>Reason</th>
+              <th>Recorded Date</th>
+              <th>Payment Status</th>
+              {% if current_user.role in ['admin', 'librarian'] %}
+                <th>Desk Action</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in fines %}
+              <tr>
+                <td><code>#F-{{ "%03d"|format(f.id) }}</code></td>
+                <td>
+                  <div class="fw-semibold">{{ f.member_name }}</div>
+                  <small class="text-muted">@{{ f.username }}</small>
+                </td>
+                <td>
+                  <div class="fw-bold text-truncate" style="max-width: 220px;" title="{{ f.book_title }}">{{ f.book_title }}</div>
+                  <small class="text-muted">Copy: <code>{{ f.accession_number }}</code></small>
+                </td>
+                <td>
+                  <span class="fw-bold fs-6 {% if f.payment_status == 'unpaid' %}text-danger{% else %}text-muted{% endif %}">
+                    ${{ "%.2f"|format(f.amount) }}
+                  </span>
+                </td>
+                <td>{{ f.reason }}</td>
+                <td>{{ f.recorded_date }}</td>
+                <td>
+                  {% if f.payment_status == 'unpaid' %}
+                    <span class="badge bg-danger">Unpaid</span>
+                  {% elif f.payment_status == 'paid' %}
+                    <span class="badge bg-success">Paid</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Waived</span>
+                  {% endif %}
+                </td>
+                {% if current_user.role in ['admin', 'librarian'] %}
+                  <td>
+                    {% if f.payment_status == 'unpaid' %}
+                      <div class="d-flex gap-1">
+                        <form action="{{ url_for('pay_fine', fine_id=f.id) }}" method="POST" class="d-inline">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <input type="hidden" name="action" value="paid">
+                          <button type="submit" class="btn btn-sm btn-success" title="Mark Paid">
+                            <i class="fa-solid fa-check me-1"></i> Paid
+                          </button>
+                        </form>
+                        <form action="{{ url_for('pay_fine', fine_id=f.id) }}" method="POST" class="d-inline confirm-action" data-confirm-message="Waive fine of ${{ f.amount }} for {{ f.member_name }}?">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <input type="hidden" name="action" value="waive">
+                          <button type="submit" class="btn btn-sm btn-outline-secondary" title="Waive Fine">
+                            Waive
+                          </button>
+                        </form>
+                      </div>
+                    {% else %}
+                      <span class="text-muted small">Settled</span>
+                    {% endif %}
+                  </td>
+                {% endif %}
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="8" class="text-center text-muted py-4">No fine records found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

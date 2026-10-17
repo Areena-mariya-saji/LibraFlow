@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}My Borrowing History — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="fa-solid fa-clock-rotate-left text-teal me-2" style="color: var(--lf-teal-primary);"></i>My Complete Borrowing History</h2>
+      <p class="text-muted small mb-0">Record of all books borrowed, returned, and currently on loan</p>
+    </div>
+    <a href="{{ url_for('member_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Book Title & Author</th>
+              <th>Accession No.</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Return Date</th>
+              <th>Status</th>
+              <th>Fine</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for loan in loans %}
+              <tr>
+                <td>
+                  <strong>{{ loan.title }}</strong>
+                  <small class="d-block text-muted">by {{ loan.author }}</small>
+                </td>
+                <td><code>{{ loan.accession_number }}</code></td>
+                <td>{{ loan.issue_date }}</td>
+                <td>{{ loan.due_date }}</td>
+                <td>
+                  {% if loan.return_date %}
+                    <span class="text-success">{{ loan.return_date }}</span>
+                  {% else %}
+                    <span class="text-muted fst-italic">Not returned yet</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if loan.loan_status == 'active' %}
+                    <span class="badge badge-status-borrowed">Active</span>
+                  {% elif loan.loan_status == 'overdue' %}
+                    <span class="badge badge-status-overdue">Overdue</span>
+                  {% else %}
+                    <span class="badge badge-status-returned">Returned</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if loan.fine_amount %}
+                    <span class="fw-bold text-danger">${{ "%.2f"|format(loan.fine_amount) }}</span>
+                    <small class="d-block text-muted">({{ loan.fine_status }})</small>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">No borrowing history found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

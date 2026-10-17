@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Book — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-navy text-white p-4" style="background-color: var(--lf-navy-dark);">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="fw-bold mb-1 text-white"><i class="fa-solid fa-book-bookmark text-teal me-2"></i>{{ action }} Book Record</h3>
+              <p class="text-light opacity-75 small mb-0">Fill in accurate bibliographic metadata for the library catalog</p>
+            </div>
+            <a href="{{ url_for('books') }}" class="btn btn-outline-light btn-sm">
+              <i class="fa-solid fa-arrow-left me-1"></i> Back to Catalog
+            </a>
+          </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+          <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-3">
+              <label for="title" class="form-label fw-semibold">Book Title <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="title" name="title" required value="{{ book.title or '' }}" placeholder="e.g. Operating Systems: Three Easy Pieces">
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="author" class="form-label fw-semibold">Author(s) <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="author" name="author" required value="{{ book.author or '' }}" placeholder="e.g. Remzi H. Arpaci-Dusseau">
+              </div>
+              <div class="col-md-6">
+                <label for="isbn" class="form-label fw-semibold">ISBN <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="isbn" name="isbn" required value="{{ book.isbn or '' }}" placeholder="e.g. 978-1985086593">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label for="publisher" class="form-label fw-semibold">Publisher <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="publisher" name="publisher" required value="{{ book.publisher or '' }}" placeholder="e.g. Arpaci-Dusseau Books">
+              </div>
+              <div class="col-md-4">
+                <label for="category" class="form-label fw-semibold">Category / Genre <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="category" name="category" required value="{{ book.category or '' }}" placeholder="e.g. Computer Science, Cloud, AI">
+              </div>
+              <div class="col-md-4">
+                <label for="publication_year" class="form-label fw-semibold">Publication Year <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="publication_year" name="publication_year" required value="{{ book.publication_year or 2024 }}" min="1900" max="2099">
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="description" class="form-label fw-semibold">Abstract / Description</label>
+              <textarea class="form-control" id="description" name="description" rows="3" placeholder="Overview of topics covered, edition details, or table of contents summary...">{{ book.description or '' }}</textarea>
+            </div>
+
+            {% if action == 'Add' %}
+              <div class="p-3 bg-light rounded-3 border mb-4">
+                <h6 class="fw-bold text-navy mb-2"><i class="fa-solid fa-copy me-1 text-teal"></i>Initial Physical Copies Registration</h6>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="copies_count" class="form-label fw-semibold">Number of Physical Copies</label>
+                    <input type="number" class="form-control" id="copies_count" name="copies_count" value="2" min="1" max="50">
+                    <small class="text-muted">Unique accession numbers will be automatically generated.</small>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="shelf_location" class="form-label fw-semibold">Initial Shelf / Stack Location</label>
+                    <input type="text" class="form-control" id="shelf_location" name="shelf_location" value="Stack A-1" placeholder="e.g. Section C, Shelf 4">
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-end gap-2">
+              <a href="{{ url_for('books') }}" class="btn btn-outline-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary fw-semibold px-4">
+                <i class="fa-solid fa-floppy-disk me-1"></i> Save Book Record
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

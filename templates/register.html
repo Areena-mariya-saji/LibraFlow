@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Register Member — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+      <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header bg-navy text-white text-center p-4" style="background-color: var(--lf-navy-dark);">
+          <i class="fa-solid fa-user-plus text-teal fa-3x mb-2" style="color: var(--lf-teal-light);"></i>
+          <h3 class="fw-bold mb-1 text-white">Student Registration</h3>
+          <p class="text-light opacity-75 small mb-0">Join LibraFlow to borrow, reserve, and track academic books</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+          <form method="POST" action="{{ url_for('register') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-3">
+              <label for="full_name" class="form-label fw-semibold">Full Legal Name</label>
+              <input type="text" class="form-control" id="full_name" name="full_name" required placeholder="e.g. John Doe">
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <label for="username" class="form-label fw-semibold">Preferred Username</label>
+                <input type="text" class="form-control" id="username" name="username" required placeholder="e.g. jdoe24">
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label fw-semibold">College Email</label>
+                <input type="email" class="form-control" id="email" name="email" required placeholder="jdoe@college.edu">
+              </div>
+            </div>
+
+            <div class="row g-2 mb-4">
+              <div class="col-md-6">
+                <label for="password" class="form-label fw-semibold">Password</label>
+                <input type="password" class="form-control" id="password" name="password" minlength="6" required placeholder="Min 6 characters">
+              </div>
+              <div class="col-md-6">
+                <label for="confirm_password" class="form-label fw-semibold">Confirm Password</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required placeholder="Repeat password">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+              <i class="fa-solid fa-check-circle me-2"></i>Complete Registration
+            </button>
+          </form>
+
+          <div class="text-center mt-4">
+            <span class="text-muted small">Already registered?</span>
+            <a href="{{ url_for('login') }}" class="small fw-semibold text-teal ms-1" style="color: var(--lf-teal-primary);">Log in to your account</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

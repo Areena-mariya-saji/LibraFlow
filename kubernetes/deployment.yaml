@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: libraflow-deployment
+  namespace: libraflow
+  labels:
+    app: libraflow
+    tier: frontend
+spec:
+  # NOTE: Single replica is used here because SQLite database is file-based and local to the container.
+  # For multi-replica horizontal scaling, production systems attach an external database (e.g. AWS RDS PostgreSQL).
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: libraflow
+  template:
+    metadata:
+      labels:
+        app: libraflow
+        tier: frontend
+    spec:
+      containers:
+        - name: libraflow-web
+          image: libraflow-app:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: libraflow-config
+            - secretRef:
+                name: libraflow-secret
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          # Health & Readiness Probes targeting the /health endpoint
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2

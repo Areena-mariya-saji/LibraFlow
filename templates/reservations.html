@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Book Reservations — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="fa-solid fa-calendar-check text-teal me-2" style="color: var(--lf-teal-primary);"></i>Book Reservations Queue</h2>
+      <p class="text-muted small mb-0">Track reservation queues, fulfill allocations when copies are returned, and manage holds</p>
+    </div>
+    <a href="{{ url_for('books') }}" class="btn btn-outline-primary btn-sm">
+      <i class="fa-solid fa-book-open me-1"></i> Browse Books
+    </a>
+  </div>
+
+  <!-- Reservations Table -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Res ID</th>
+              <th>Book Title</th>
+              <th>Member</th>
+              <th>Reservation Date</th>
+              <th>Copies On Shelf</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in reservations %}
+              <tr>
+                <td><code>#R-{{ "%03d"|format(r.id) }}</code></td>
+                <td>
+                  <strong><a href="{{ url_for('book_detail', book_id=r.book_id) }}" class="text-navy text-decoration-none">{{ r.book_title }}</a></strong>
+                  <small class="d-block text-muted">{{ r.category }}</small>
+                </td>
+                <td>
+                  <div class="fw-semibold">{{ r.member_name }}</div>
+                  <small class="text-muted">@{{ r.username }}</small>
+                </td>
+                <td>{{ r.reservation_date }}</td>
+                <td>
+                  {% if r.available_copies > 0 %}
+                    <span class="badge bg-success">{{ r.available_copies }} Available</span>
+                  {% else %}
+                    <span class="badge bg-light text-muted border">0 Available</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if r.reservation_status == 'pending' %}
+                    <span class="badge badge-status-reserved">Pending</span>
+                  {% elif r.reservation_status == 'fulfilled' %}
+                    <span class="badge bg-success">Fulfilled</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Cancelled</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="d-flex gap-1">
+                    {% if r.reservation_status == 'pending' %}
+                      {% if current_user.role in ['admin', 'librarian'] %}
+                        <form action="{{ url_for('fulfill_reservation', reservation_id=r.id) }}" method="POST" class="d-inline">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <button type="submit" class="btn btn-sm btn-success" title="Mark Fulfilled">
+                            <i class="fa-solid fa-check"></i>
+                          </button>
+                        </form>
+                      {% endif %}
+                      <form action="{{ url_for('cancel_reservation', reservation_id=r.id) }}" method="POST" class="d-inline confirm-action" data-confirm-message="Cancel this reservation?">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel Reservation">
+                          <i class="fa-solid fa-xmark"></i>
+                        </button>
+                      </form>
+                    {% else %}
+                      <span class="text-muted small">—</span>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">No reservations in the system.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
