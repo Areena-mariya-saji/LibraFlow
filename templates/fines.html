@@ -35,7 +35,7 @@
               <th>Reason</th>
               <th>Recorded Date</th>
               <th>Payment Status</th>
-              {% if current_user.role in ['admin', 'librarian'] %}
+              {% if current_user.role == 'admin' %}
                 <th>Desk Action</th>
               {% endif %}
             </tr>
@@ -68,7 +68,7 @@
                     <span class="badge bg-secondary">Waived</span>
                   {% endif %}
                 </td>
-                {% if current_user.role in ['admin', 'librarian'] %}
+                {% if current_user.role == 'admin' %}
                   <td>
                     {% if f.payment_status == 'unpaid' %}
                       <div class="d-flex gap-1">

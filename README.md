@@ -58,7 +58,7 @@ LibraFlow solves these problems through transactional relational constraints and
 ## 3. Objectives & Scope
 
 ### 3.1 Objectives
-* Develop an intuitive, role-based web interface for Administrators, Librarians, and Students.
+* Develop an intuitive, role-based web interface for Administrators and Students.
 * Maintain physical inventory with unique accession numbers and shelf locations.
 * Implement robust borrowing and return rules (prevent borrowing unavailable copies, reject duplicate returns).
 * Automate daily overdue loan identification and fine calculation.
@@ -90,11 +90,10 @@ LibraFlow solves these problems through transactional relational constraints and
 
 ## 5. Key Application Features
 
-* **Role-Based Access Control (RBAC)**: Distinct interfaces and permissions for Administrator, Librarian, and Student/Member.
+* **Role-Based Access Control (RBAC)**: Distinct interfaces and permissions for Administrator and Student/Member portals.
 * **Live Dashboards**: 
-  * Admin: Total titles, physical copies, available copies, active loans, overdue returns, pending reservations, and unpaid fines.
-  * Librarian: Circulation desk, rapid issue/return workflows, and reservation holds.
-  * Student: Personal borrowing history, due date warnings, reservation queue status, and outstanding fines.
+  * Admin Portal: Total titles, physical copies, available copies, active loans, overdue returns, pending reservations, unpaid fines, rapid circulation desk (issue/return), and reservation holds.
+  * Student Portal: Personal borrowing history, due date warnings, reservation queue status, and outstanding fines.
 * **Copy-Level Accession Tracking**: Every book copy has its own unique accession identifier (`LIB-CC-001`), shelf location, and status (`available`, `borrowed`, `reserved`, `maintenance`).
 * **Safe Borrowing & Return Logic**:
   * Prevents issuing copies that are already borrowed or in maintenance.
@@ -126,7 +125,7 @@ LibraFlow solves these problems through transactional relational constraints and
 flowchart TD
     subgraph ClientLayer["User Access Layer (Browser)"]
         Member["Library Member (Student)"]
-        Librarian["Librarian / Administrator"]
+        Admin["Administrator"]
     end
 
     subgraph AppLayer["LibraFlow Core (Python Flask & Gunicorn)"]
@@ -141,7 +140,7 @@ flowchart TD
     end
 
     Member --> Router
-    Librarian --> Router
+    Admin --> Router
     Router --> CSRF
     CSRF --> CirculationEngine
     CirculationEngine --> DB
@@ -213,10 +212,9 @@ LibraFlow/
 ├── templates/                  # Jinja2 HTML5 templates
 │   ├── base.html               # Master layout with navbar, alerts, footer
 │   ├── index.html              # Landing page with search & metric counters
-│   ├── login.html              # Sign-in page with 1-click demo credential pills
+│   ├── login.html              # Sign-in page with 1-click credential buttons
 │   ├── register.html           # Member registration
-│   ├── admin_dashboard.html    # Admin KPI control center
-│   ├── librarian_dashboard.html# Circulation desk & pending returns
+│   ├── admin_dashboard.html    # Admin KPI control center & circulation management
 │   ├── member_dashboard.html   # Student personal loans & reservations
 │   ├── member_loans.html       # Student full borrowing history
 │   ├── books.html              # Catalog grid with live category/status filters
@@ -235,7 +233,7 @@ LibraFlow/
 │   ├── schema.sql              # DDL schema with tables, FKs & indexes
 │   ├── db.py                   # Connection management & overdue sync helpers
 │   ├── init_db.py              # CLI database schema initializer
-│   ├── seed_data.py            # Rich demo seed script (Admin, Librarian, Books)
+│   ├── seed_data.py            # Rich seed script (Admin, Students, Books)
 │   └── libraflow.db            # Local SQLite database
 ├── scripts/                    # Module 2 Virtualization Automation Shell Scripts
 │   ├── check_virtualization.sh # Diagnostic script for CPU flags (vmx/svm)
@@ -318,12 +316,11 @@ http://localhost:5000
 
 ## 11. Demo Credentials & Quick Walkthrough
 
-For seamless demonstration during practical exams, the sign-in page (`/login`) includes **1-click credential pre-fill buttons**:
+For seamless demonstration during practical exams, the sign-in page (`/login`) includes **1-click credential pre-fill buttons** for Admin and Student:
 
 | Role | Username | Password | Key Permissions |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin` | `Admin@123` | Full system control, manage users, delete books, audit reports, system settings. |
-| **Librarian** | `librarian1` | `Librarian@123` | Circulation desk, issue/return copies, manage reservations, record fine payments. |
+| **Administrator** | `admin` | `Admin@123` | Full system control, circulation desk (issue/return), manage users, catalog & copies, settle fines, audit reports. |
 | **Student 1** | `student1` | `Student@123` | Search books, reserve books, view personal loans, check personal fines. |
 | **Student 2** | `student2` | `Student@123` | Account with an active overdue book loan demonstrating late fine warnings. |
 | **Student 3** | `student3` | `Student@123` | Account with an active loan on "Kubernetes: Up and Running". |

@@ -16,7 +16,7 @@ The monolithic web application is constructed around a clean Model-View-Controll
 flowchart TD
     subgraph ClientLayer["User Access Layer (Browser)"]
         Member["Library Member (Student)"]
-        Librarian["Librarian / Administrator"]
+        Admin["Administrator"]
     end
 
     subgraph PresentationLayer["Presentation Layer (Bootstrap 5 & Custom CSS)"]
@@ -36,7 +36,7 @@ flowchart TD
     end
 
     Member --> Views
-    Librarian --> Views
+    Admin --> Views
     Views --> Router
     Router --> Auth
     Auth --> BusinessLogic
@@ -90,7 +90,7 @@ flowchart TD
 flowchart LR
     subgraph ClientAccess["Client Requests"]
         ClientApp["Student / Mobile Client"]
-        S3Uploader["Librarian Catalog Export"]
+        S3Uploader["Admin Catalog Export"]
     end
 
     subgraph AWSCloud["AWS Serverless Architecture"]

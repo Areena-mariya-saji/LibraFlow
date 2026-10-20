@@ -29,7 +29,7 @@ Rather than monolithic polling, components communicate by emitting and reacting 
 ```
 
 ```
-[Librarian uploads catalog.csv]
+[Admin uploads catalog.csv]
           │
           ▼
 [Amazon S3 Bucket]

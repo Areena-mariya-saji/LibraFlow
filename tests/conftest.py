@@ -68,19 +68,6 @@ def admin_client(app_instance, client):
 
 
 @pytest.fixture
-def librarian_client(app_instance, client):
-    conn = get_db(app_instance.config["DATABASE_PATH"])
-    user = conn.execute("SELECT id, username, full_name, role FROM users WHERE username = 'librarian1'").fetchone()
-    with client.session_transaction() as sess:
-        sess["user_id"] = user["id"]
-        sess["username"] = user["username"]
-        sess["full_name"] = user["full_name"]
-        sess["role"] = user["role"]
-        sess["_csrf_token"] = "test-csrf-token-123456"
-    return client
-
-
-@pytest.fixture
 def member1_client(app_instance, client):
     conn = get_db(app_instance.config["DATABASE_PATH"])
     user = conn.execute("SELECT id, username, full_name, role FROM users WHERE username = 'student1'").fetchone()

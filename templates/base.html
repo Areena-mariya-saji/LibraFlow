@@ -65,41 +65,10 @@
                   <i class="fa-solid fa-chart-pie me-1"></i> Reports
                 </a>
               </li>
-            {% elif current_user.role == 'librarian' %}
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('librarian_dashboard') }}">
-                  <i class="fa-solid fa-gauge me-1"></i> Librarian Dashboard
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('loans') }}">
-                  <i class="fa-solid fa-arrow-right-arrow-left me-1"></i> Issue & Return
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('members') }}">
-                  <i class="fa-solid fa-users me-1"></i> Members
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('reservations') }}">
-                  <i class="fa-solid fa-calendar-check me-1"></i> Reservations
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('fines') }}">
-                  <i class="fa-solid fa-receipt me-1"></i> Fines
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('reports') }}">
-                  <i class="fa-solid fa-chart-pie me-1"></i> Reports
-                </a>
-              </li>
             {% else %}
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('member_dashboard') }}">
-                  <i class="fa-solid fa-user-graduate me-1"></i> My Dashboard
+                  <i class="fa-solid fa-user-graduate me-1"></i> Student Dashboard
                 </a>
               </li>
               <li class="nav-item">
@@ -127,17 +96,15 @@
               <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
                 <i class="fa-solid fa-circle-user fa-lg text-teal"></i>
                 <span>{{ current_user.full_name }}</span>
-                <span class="badge bg-secondary text-uppercase">{{ current_user.role }}</span>
+                <span class="badge bg-secondary text-uppercase">{% if current_user.role == 'admin' %}ADMIN{% else %}STUDENT{% endif %}</span>
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow">
                 <li><h6 class="dropdown-header">Signed in as <strong>{{ current_user.username }}</strong></h6></li>
                 <li><hr class="dropdown-divider"></li>
                 {% if current_user.role == 'admin' %}
                   <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge me-2"></i>Admin Dashboard</a></li>
-                {% elif current_user.role == 'librarian' %}
-                  <li><a class="dropdown-item" href="{{ url_for('librarian_dashboard') }}"><i class="fa-solid fa-gauge me-2"></i>Librarian Dashboard</a></li>
                 {% else %}
-                  <li><a class="dropdown-item" href="{{ url_for('member_dashboard') }}"><i class="fa-solid fa-user-graduate me-2"></i>Member Dashboard</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('member_dashboard') }}"><i class="fa-solid fa-user-graduate me-2"></i>Student Dashboard</a></li>
                 {% endif %}
                 <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket me-2 text-danger"></i>Log Out</a></li>
               </ul>

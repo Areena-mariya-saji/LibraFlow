@@ -86,7 +86,7 @@
           </div>
         </div>
 
-        {% if current_user and current_user.role in ['admin', 'librarian'] %}
+        {% if current_user and current_user.role == 'admin' %}
           <div class="d-grid gap-2">
             <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addCopyModal">
               <i class="fa-solid fa-plus-circle me-1"></i> Add Physical Copy
@@ -157,7 +157,7 @@
 </div>
 
 <!-- Modal: Add Physical Copy -->
-{% if current_user and current_user.role in ['admin', 'librarian'] %}
+{% if current_user and current_user.role == 'admin' %}
 <div class="modal fade" id="addCopyModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content rounded-4 border-0 shadow">

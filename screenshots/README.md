@@ -1,6 +1,6 @@
 # LibraFlow — Practical Record Screenshots Checklist
 
-This document provides a structured guide for capturing and organizing screenshots for your BCA microproject practical record, lab file, and presentation slides.
+This document provides a structured guide for capturing and organizing screenshots for your practical record, lab file, and presentation slides.
 
 > [!NOTE]
 > In accordance with academic honesty guidelines, do not fabricate or alter screenshots. Capture real screenshots directly from your running environment using the Windows Snipping Tool (`Win + Shift + S`) or Ubuntu Screenshot utility.
@@ -12,9 +12,9 @@ This document provides a structured guide for capturing and organizing screensho
 | Filename | View / Page | Key Elements to Capture |
 | :--- | :--- | :--- |
 | `01_homepage.png` | Homepage (`/`) | Hero section, search bar, inventory metric counters (Total Titles, Physical Copies, Available Copies), and featured books grid. |
-| `02_login_demo_pills.png` | Sign In Page (`/login`) | Login form showing the one-click demo account buttons (`Admin`, `Librarian`, `Student 1`). |
-| `03_admin_dashboard.png` | Admin Dashboard (`/admin/dashboard`) | 8 KPI stat cards, Recent Loan Transactions table, and Recent Users panel. |
-| `04_librarian_circulation.png` | Librarian Dashboard (`/librarian/dashboard`) | Pending returns table with one-click return buttons and pending reservation queues. |
+| `02_login_demo_pills.png` | Sign In Page (`/login`) | Login form showing the one-click credential buttons (`Admin`, `Student 1`). |
+| `03_admin_dashboard.png` | Admin Dashboard (`/admin/dashboard`) | KPI stat cards, Recent Loan Transactions table, and Recent Users panel. |
+| `04_circulation_desk.png` | Circulation & Loans (`/loans`) | Loan ledger, one-click return actions, and book issuance desk modal. |
 | `05_student_dashboard.png` | Student Dashboard (`/member/dashboard`) | Current borrowed books, active due date warnings, reservation status, and outstanding fines. |
 | `06_catalog_search_filters.png` | Books Catalog (`/books`) | Filtered search results showing category pill tags and copy availability badges (`Available Now` vs `All Borrowed`). |
 | `07_book_detail_accessions.png` | Book Details (`/books/<id>`) | Bibliographic details, Reserve button, and table of physical copies with unique accession numbers (`LIB-CC-001`, `LIB-CC-002`). |

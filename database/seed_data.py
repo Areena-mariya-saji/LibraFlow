@@ -32,10 +32,9 @@ def seed(db_path=None):
         pass
 
     # 2. Seed Users
-    # Admin: Admin@123, Librarian: Librarian@123, Students: Student@123
+    # Admin: Admin@123, Students: Student@123
     users_data = [
         ("System Administrator", "admin", "admin@libraflow.edu", generate_password_hash("Admin@123"), "admin", "active"),
-        ("Sarah Jenkins", "librarian1", "sarah.jenkins@libraflow.edu", generate_password_hash("Librarian@123"), "librarian", "active"),
         ("Alex Kumar", "student1", "alex.kumar@student.libraflow.edu", generate_password_hash("Student@123"), "member", "active"),
         ("Priya Sharma", "student2", "priya.sharma@student.libraflow.edu", generate_password_hash("Student@123"), "member", "active"),
         ("Rahul Verma", "student3", "rahul.verma@student.libraflow.edu", generate_password_hash("Student@123"), "member", "active"),
@@ -132,9 +131,8 @@ def seed(db_path=None):
     conn.commit()
     sync_overdue_and_fines(conn)
     conn.close()
-    print("[+] Database successfully seeded with demo accounts and library records.")
+    print("[+] Database successfully seeded with accounts and library records.")
     print("    - Admin: username='admin', password='Admin@123'")
-    print("    - Librarian: username='librarian1', password='Librarian@123'")
     print("    - Student 1: username='student1', password='Student@123'")
     print("    - Student 2: username='student2', password='Student@123'")
     print("    - Student 3: username='student3', password='Student@123'")

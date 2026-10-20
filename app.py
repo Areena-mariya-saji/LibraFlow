@@ -157,8 +157,6 @@ def create_app(config_name=None):
         if g.user is not None:
             if g.user["role"] == "admin":
                 return redirect(url_for("admin_dashboard"))
-            elif g.user["role"] == "librarian":
-                return redirect(url_for("librarian_dashboard"))
             else:
                 return redirect(url_for("member_dashboard"))
 
@@ -197,8 +195,6 @@ def create_app(config_name=None):
 
             if user["role"] == "admin":
                 return redirect(url_for("admin_dashboard"))
-            elif user["role"] == "librarian":
-                return redirect(url_for("librarian_dashboard"))
             else:
                 return redirect(url_for("member_dashboard"))
 
@@ -319,49 +315,8 @@ def create_app(config_name=None):
 
     @app.route("/librarian/dashboard")
     @login_required
-    @roles_required("admin", "librarian")
     def librarian_dashboard():
-        conn = get_db()
-        sync_overdue_and_fines(conn, app.config["FINE_PER_DAY"])
-
-        total_books = conn.execute("SELECT COUNT(*) as c FROM books").fetchone()["c"]
-        available_copies = conn.execute("SELECT COUNT(*) as c FROM book_copies WHERE status = 'available'").fetchone()["c"]
-        active_loans = conn.execute("SELECT COUNT(*) as c FROM loans WHERE return_date IS NULL").fetchone()["c"]
-        overdue_loans = conn.execute("SELECT COUNT(*) as c FROM loans WHERE loan_status = 'overdue'").fetchone()["c"]
-        pending_reservations = conn.execute("SELECT COUNT(*) as c FROM reservations WHERE reservation_status = 'pending'").fetchone()["c"]
-
-        pending_returns = conn.execute("""
-            SELECT l.id, l.issue_date, l.due_date, l.loan_status,
-                   u.full_name as member_name, u.username,
-                   b.title as book_title, bc.accession_number
-            FROM loans l
-            JOIN users u ON l.member_id = u.id
-            JOIN book_copies bc ON l.book_copy_id = bc.id
-            JOIN books b ON bc.book_id = b.id
-            WHERE l.return_date IS NULL
-            ORDER BY l.due_date ASC LIMIT 6
-        """).fetchall()
-
-        recent_reservations = conn.execute("""
-            SELECT r.id, r.reservation_date, r.reservation_status,
-                   u.full_name as member_name, b.title as book_title, b.id as book_id
-            FROM reservations r
-            JOIN users u ON r.member_id = u.id
-            JOIN books b ON r.book_id = b.id
-            WHERE r.reservation_status = 'pending'
-            ORDER BY r.id DESC LIMIT 5
-        """).fetchall()
-
-        return render_template(
-            "librarian_dashboard.html",
-            total_books=total_books,
-            available_copies=available_copies,
-            active_loans=active_loans,
-            overdue_loans=overdue_loans,
-            pending_reservations=pending_reservations,
-            pending_returns=pending_returns,
-            recent_reservations=recent_reservations
-        )
+        return redirect(url_for("admin_dashboard"))
 
     @app.route("/member/dashboard")
     @login_required
@@ -502,7 +457,7 @@ def create_app(config_name=None):
 
     @app.route("/books/add", methods=["GET", "POST"])
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def add_book():
         if request.method == "POST":
             title = request.form.get("title", "").strip()
@@ -560,7 +515,7 @@ def create_app(config_name=None):
 
     @app.route("/books/<int:book_id>/edit", methods=["GET", "POST"])
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def edit_book(book_id):
         conn = get_db()
         book = conn.execute("SELECT * FROM books WHERE id = ?", (book_id,)).fetchone()
@@ -640,7 +595,7 @@ def create_app(config_name=None):
 
     @app.route("/books/<int:book_id>/copies/add", methods=["POST"])
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def add_book_copy(book_id):
         accession_number = request.form.get("accession_number", "").strip()
         location = request.form.get("location", "").strip()
@@ -669,7 +624,7 @@ def create_app(config_name=None):
     # -------------------------------------------------------------
     @app.route("/loans")
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def loans():
         conn = get_db()
         sync_overdue_and_fines(conn, app.config["FINE_PER_DAY"])
@@ -720,7 +675,7 @@ def create_app(config_name=None):
 
     @app.route("/loans/issue", methods=["POST"])
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def issue_book():
         copy_id = request.form.get("copy_id")
         member_id = request.form.get("member_id")
@@ -784,7 +739,7 @@ def create_app(config_name=None):
 
     @app.route("/loans/<int:loan_id>/return", methods=["POST"])
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def return_book(loan_id):
         conn = get_db()
         loan = conn.execute("""
@@ -858,7 +813,7 @@ def create_app(config_name=None):
     @login_required
     def reservations():
         conn = get_db()
-        if g.user["role"] in ["admin", "librarian"]:
+        if g.user["role"] == "admin":
             reservations_list = conn.execute("""
                 SELECT r.id, r.reservation_date, r.reservation_status,
                        u.full_name as member_name, u.username, u.email,
@@ -932,8 +887,8 @@ def create_app(config_name=None):
             flash("Reservation record not found.", "warning")
             return redirect(url_for("reservations"))
 
-        # Guard: Member can only cancel their own reservation unless admin/librarian
-        if g.user["role"] not in ["admin", "librarian"] and res["member_id"] != g.user["id"]:
+        # Guard: Member can only cancel their own reservation unless admin
+        if g.user["role"] != "admin" and res["member_id"] != g.user["id"]:
             flash("Access denied: You cannot modify another member's reservation.", "danger")
             abort(403)
 
@@ -945,7 +900,7 @@ def create_app(config_name=None):
 
     @app.route("/reservations/<int:reservation_id>/fulfill", methods=["POST"])
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def fulfill_reservation(reservation_id):
         conn = get_db()
         res = conn.execute("SELECT * FROM reservations WHERE id = ?", (reservation_id,)).fetchone()
@@ -967,7 +922,7 @@ def create_app(config_name=None):
         conn = get_db()
         sync_overdue_and_fines(conn, app.config["FINE_PER_DAY"])
 
-        if g.user["role"] in ["admin", "librarian"]:
+        if g.user["role"] == "admin":
             fines_list = conn.execute("""
                 SELECT f.id, f.amount, f.reason, f.payment_status, f.recorded_date,
                        u.full_name as member_name, u.username,
@@ -999,7 +954,7 @@ def create_app(config_name=None):
 
     @app.route("/fines/<int:fine_id>/pay", methods=["POST"])
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def pay_fine(fine_id):
         conn = get_db()
         fine = conn.execute("SELECT * FROM fines WHERE id = ?", (fine_id,)).fetchone()
@@ -1040,11 +995,11 @@ def create_app(config_name=None):
         return render_template("member_loans.html", loans=loans_history)
 
     # -------------------------------------------------------------
-    # Member Management (Admin & Librarian)
+    # Member Management (Admin)
     # -------------------------------------------------------------
     @app.route("/members")
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def members():
         conn = get_db()
         members_list = conn.execute("""
@@ -1059,7 +1014,7 @@ def create_app(config_name=None):
 
     @app.route("/members/add", methods=["POST"])
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def add_member():
         full_name = request.form.get("full_name", "").strip()
         username = request.form.get("username", "").strip()
@@ -1067,8 +1022,8 @@ def create_app(config_name=None):
         password = request.form.get("password", "")
         role = request.form.get("role", "member")
 
-        if g.user["role"] != "admin" and role in ["admin", "librarian"]:
-            flash("Only administrators can assign administrative or librarian roles.", "danger")
+        if g.user["role"] != "admin" and role == "admin":
+            flash("Only administrators can assign administrative roles.", "danger")
             return redirect(url_for("members"))
 
         if not (full_name and username and email and password):
@@ -1116,7 +1071,7 @@ def create_app(config_name=None):
     # -------------------------------------------------------------
     @app.route("/reports")
     @login_required
-    @roles_required("admin", "librarian")
+    @roles_required("admin")
     def reports():
         conn = get_db()
         sync_overdue_and_fines(conn, app.config["FINE_PER_DAY"])

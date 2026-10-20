@@ -9,7 +9,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
       <h2 class="fw-bold mb-1"><i class="fa-solid fa-users text-teal me-2" style="color: var(--lf-teal-primary);"></i>Library Users & Members</h2>
-      <p class="text-muted small mb-0">View registered students, librarians, account statuses, active loans, and fines</p>
+      <p class="text-muted small mb-0">View registered students, account statuses, active loans, and fines</p>
     </div>
     <div class="d-flex gap-2">
       <button class="btn btn-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#addUserModal">
@@ -65,10 +65,8 @@
                 <td>
                   {% if m.role == 'admin' %}
                     <span class="badge bg-dark text-uppercase">Admin</span>
-                  {% elif m.role == 'librarian' %}
-                    <span class="badge bg-info text-dark text-uppercase">Librarian</span>
                   {% else %}
-                    <span class="badge bg-secondary text-uppercase">Member</span>
+                    <span class="badge bg-secondary text-uppercase">Student</span>
                   {% endif %}
                 </td>
                 <td>
@@ -157,9 +155,8 @@
           <div class="mb-3">
             <label class="form-label fw-semibold">Assigned Role</label>
             <select name="role" class="form-select">
-              <option value="member" selected>Student / Member</option>
+              <option value="member" selected>Student</option>
               {% if current_user.role == 'admin' %}
-                <option value="librarian">Librarian</option>
                 <option value="admin">Administrator</option>
               {% endif %}
             </select>
